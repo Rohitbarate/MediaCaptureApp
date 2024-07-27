@@ -10,10 +10,25 @@ const Stack = createNativeStackNavigator();
 
 const RootStack = () => {
   return (
-    <Stack.Navigator screenOptions={{headerShown: false}}>
+    <Stack.Navigator
+      screenOptions={{headerShown: false, headerShadowVisible: false}}>
       <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="Preview" component={PreviewScreen} />
-      <Stack.Screen name="Gallery" component={GalleryScreen} />
+      <Stack.Screen
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+          headerShown: true,
+        }}
+        name="Preview"
+        component={PreviewScreen}
+      />
+      <Stack.Screen
+        name="Gallery"
+        options={{
+          headerShown: true,
+        }}
+        component={GalleryScreen}
+      />
       <Stack.Screen name="SelectedMedia" component={SelectedMediaScreen} />
     </Stack.Navigator>
   );
