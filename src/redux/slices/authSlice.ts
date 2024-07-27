@@ -1,9 +1,11 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {BASE_URL} from '../../../constant';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {ToastAndroid} from 'react-native';
 
 interface User {
   id: string;
+  googleId: string;
   name: string;
   email: string;
 }
@@ -64,6 +66,7 @@ const authSlice = createSlice({
     builder.addCase(loginUserAction.fulfilled, (state, action) => {
       state.user = action.payload;
       state.loading = false;
+      ToastAndroid.show(action.payload.message, ToastAndroid.LONG);
     });
     builder.addCase(loginUserAction.rejected, (state, action) => {
       state.error = true;
