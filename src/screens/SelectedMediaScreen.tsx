@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,21 @@ import {
   Button,
   TouchableOpacity,
   ActivityIndicator,
+  ToastAndroid,
+  Dimensions,
 } from 'react-native';
-import {ArrowLeft, ArrowDownToLine, Trash2} from 'lucide-react-native';
+import {
+  ArrowLeft,
+  ArrowDownToLine,
+  Trash2,
+  RotateCcw,
+  Play,
+  Pause,
+} from 'lucide-react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {deleteMedia, uploadMedia} from '../redux/slices/mediaSlice';
+import Video from 'react-native-video';
+import VideoView from './VideoView';
 
 const SelectedMediaScreen = ({
   navigation,
@@ -23,7 +34,57 @@ const SelectedMediaScreen = ({
   const dispatch = useDispatch();
   const user = useSelector((state: any) => state.auth.user);
   const {success, dLoading} = useSelector((state: any) => state.media);
-  console.log({media});
+  const [videoProp, setVideoProp] = useState({});
+  const [isVideoEnded, setIsVideoEnded] = useState(false);
+  const [isVideoPaused, setIsVideoPaused] = useState(false);
+  const [showControls, setShowControls] = useState(false);
+
+  const {WIDTH} = Dimensions.get('window').width;
+
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    //console.log({isVideoPaused});
+    if (!isVideoPaused) {
+      setShowControls(true);
+    }
+  }, [isVideoPaused]);
+
+  const onVideoPlaying = props => {
+    setVideoProp(props);
+  };
+
+  const onReadyForDisplay = () => {
+    // setloading(false);
+    //console.log('onReadyForDisplay');
+    setIsVideoEnded(false);
+    setShowControls(true);
+    hideControls();
+  };
+
+  const hideControls = () => {
+    const timerId = setTimeout(() => {
+      if (!isVideoEnded) {
+        if (isVideoPaused) {
+          setShowControls(true);
+        } else {
+          setShowControls(false);
+        }
+      }
+    }, 5000);
+    isVideoEnded && clearTimeout(timerId);
+  };
+
+  const onVideoEnd = () => {
+    setIsVideoEnded(true);
+    setShowControls(true);
+    setIsVideoPaused(true);
+    videoRef.current.seek(-videoProp.seekableDuration);
+  };
+
+  const videoError = () => {
+    ToastAndroid.show('Status can not be loaded,try again', ToastAndroid.SHORT);
+  };
 
   useEffect(() => {
     if (!media || media == null) {
@@ -36,19 +97,9 @@ const SelectedMediaScreen = ({
       dispatch(deleteMedia({key: media.key, userId: user.id}));
     }
   };
+
   const saveHandler = async () => {
-    const res = await fetch(
-      `http://192.168.0.107:5000/api/media/save/${media.key}`,
-      {
-        method: 'POST',
-        body: JSON.stringify({userId: user.id}),
-        headers: {
-          Accept: '*/*',
-          'Content-Type': 'application/json',
-        },
-      },
-    );
-    console.log(await res.json());
+    ToastAndroid.show('Media saved successfully', ToastAndroid.LONG);
   };
 
   return (
@@ -61,12 +112,7 @@ const SelectedMediaScreen = ({
       />
       <View style={styles.modalContainer}>
         {media !== null && media.fileType.startsWith('video/') ? (
-          // <Video
-          //   source={{ uri: media.uri }}
-          //   style={styles.media}
-          //   controls
-          // />
-          <Text style={{color: '#000'}}>video view</Text>
+          <VideoView uri={media.url} />
         ) : (
           media !== null && (
             <Image
@@ -128,6 +174,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#fff',
+    width: '100%',
   },
   media: {
     width: '100%',
@@ -159,6 +206,40 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 16,
+  },
+  videoView: {
+    // borderRadius: 10,
+    height: '90%',
+    overflow: 'hidden',
+    width: '100%',
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+  },
+  video: {
+    backgroundColor: '#000',
+    width: '100%',
+    height: '100%',
+    // borderRadius: 10,
+  },
+  customControlView: {
+    position: 'absolute',
+    height: '100%',
+    width: '100%',
+    // backgroundColor: '#00000040',
+    alignItems: 'center',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+    paddingTop: 10,
+    zIndex: 10,
+  },
+  customControlViewFooter: {
+    alignSelf: 'flex-end',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    // marginBottom: 10,
   },
 });
 

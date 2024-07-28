@@ -12,6 +12,8 @@ import {
 import {Upload, XCircle} from 'lucide-react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {uploadMedia} from '../redux/slices/mediaSlice';
+import Video from 'react-native-video';
+import VideoView from './VideoView';
 
 const PreviewScreen = ({
   navigation,
@@ -57,13 +59,8 @@ const PreviewScreen = ({
         Preview
       </Text>
       <View style={styles.modalContainer}>
-        {media !== null && media.type === 'video' ? (
-          // <Video
-          //   source={{ uri: media.uri }}
-          //   style={styles.media}
-          //   controls
-          // />
-          <Text style={{color: '#000'}}>video view</Text>
+        {media !== null && media.type.startsWith('video/') ? (
+          <VideoView uri={media.uri} />
         ) : (
           media !== null && (
             <Image

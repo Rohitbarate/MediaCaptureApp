@@ -13,6 +13,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {fetchMedia} from '../redux/slices/mediaSlice';
 import {Play} from 'lucide-react-native';
 import SelectedMediaScreen from './SelectedMediaScreen';
+import Video from 'react-native-video';
 
 const GalleryScreen = ({navigation}) => {
   const dispatch = useDispatch();
@@ -66,7 +67,7 @@ const GalleryScreen = ({navigation}) => {
           scrollIndicatorInsets={{right: 2}}
           numColumns={2}
           data={media}
-          keyExtractor={item => item.name + item.lastModified}
+          keyExtractor={item => item.key}
           renderItem={({item}) => (
             <TouchableOpacity
               activeOpacity={0.6}
@@ -75,26 +76,40 @@ const GalleryScreen = ({navigation}) => {
                 setVisible(true);
               }}>
               <View style={[styles.outerView, {width: width / 2.3}]}>
-                <Image
-                  style={{
-                    width: width / 2.3,
-                    height: 250,
-                    resizeMode: 'cover',
-                    aspectRatio: 1,
-                  }}
-                  source={{uri: item.url}}
-                />
-                {item.fileType.startsWith('video/') && (
-                  <View
+                {item.fileType.startsWith('video/') ? (
+                  <>
+                    <Video
+                      source={{uri: item.url}}
+                      style={{
+                        width: width / 2.3,
+                        height: 250,
+                        aspectRatio: 1,
+                      }}
+                      resizeMode="cover"
+                      paused={true}
+                      poster={item.url} // Provide a URL to the poster image
+                    />
+                    <View
+                      style={{
+                        position: 'absolute',
+                        alignSelf: 'center',
+                        // backgroundColor: '#212121',
+                        borderRadius: 55,
+                        opacity: 0.8,
+                      }}>
+                      <Play color="#000" size={30} />
+                    </View>
+                  </>
+                ) : (
+                  <Image
                     style={{
-                      position: 'absolute',
-                      alignSelf: 'center',
-                      // backgroundColor: '#212121',
-                      borderRadius: 55,
-                      opacity: 0.8,
-                    }}>
-                    <Play color="#212121" size={30} />
-                  </View>
+                      width: width / 2.3,
+                      height: 250,
+                      resizeMode: 'cover',
+                      aspectRatio: 1,
+                    }}
+                    source={{uri: item.url}}
+                  />
                 )}
               </View>
             </TouchableOpacity>
